@@ -1,29 +1,24 @@
 import pymongo
 
-def indexesOf(word: str, letter: chr) -> list:
-    indexes = []
-    for let in word:
-        if let == letter:
-            indexes.append(let)
-    return indexes
-    
 
 class Solver:
     def __init__(self):
         self.blacks = []
         self.yellows = {}
         self.greens = {}
-        self.possible_words = []
+        self.possible_words = {}
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["5_letter_words"]  
+        self.db = self.client["5_letter_words_with_frequency"]  
         self.collection = self.db["words"]  
 
         for document in self.collection.find():
-            word = document.get("word")  # Extract the word field
+            word = document.get("word")  
+            frequency = document.get("frequency")
             if word:
-                self.possible_words.append(word)
+                self.possible_words[word] = frequency
             else:
                 print("Warning: Document does not contain 'word' field:", document)
+
 
         #print(self.possible_words)
 
@@ -42,8 +37,8 @@ class Solver:
         self.greens[index] = letter
 
     def get_possible_words(self):
-        new_possible_words = []
-        for word in self.possible_words:
+        new_possible_words = {}
+        for word in self.possible_words.keys():
             black_flag = False
             yellow_flag = True
             green_flag = True
@@ -85,7 +80,8 @@ class Solver:
 
             #add word if all 3 flags are true
             if black_flag and green_flag and yellow_flag:
-                new_possible_words.append(word)
+                freq = self.possible_words[word]
+                new_possible_words[word] = freq
             
 
         self.possible_words = new_possible_words
