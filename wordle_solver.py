@@ -46,12 +46,12 @@ if __name__ == "__main__":
                 highest_freq = freq
                 best_word = word
         print("The most likely word is:", best_word)
-        if len(solver.possible_words) <= 10:
+        if len(solver.possible_words) <= 1000:
             solver.print_possible_words()
         if len(solver.possible_words) == 1:
             print("You win!")
             break
+        solver.print_all()
         if len(solver.possible_words) <= 0:
             print("Error: No possible words. Something went wrong")
             break
-        solver.print_all()

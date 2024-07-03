@@ -3,10 +3,11 @@ import pymongo
 
 class Solver:
     def __init__(self):
-        self.blacks = []
+        self.blacks = set({})
         self.yellows = {}
         self.greens = {}
         self.possible_words = {}
+        self.black_and_greens = set({})
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.db = self.client["5_letter_words_with_frequency"]  
         self.collection = self.db["words"]  
@@ -23,7 +24,7 @@ class Solver:
         #print(self.possible_words)
 
     def add_blacks(self, letter: str) -> None:
-        self.blacks.append(letter)
+        self.blacks.add(letter)
 
     def add_yellows(self, letter: str, index: int) -> None:
         if letter in self.yellows:
@@ -36,18 +37,27 @@ class Solver:
             del self.yellows[letter]
         self.greens[index] = letter
 
+    def add_blacks_and_greens(self) -> None:
+        # print("running add_blacks_and_greens!")
+        # print("blacks at this time:", self.blacks)
+        for letter in self.blacks:
+            if letter in self.greens.values():
+                self.black_and_greens.add(letter)
+
     def get_possible_words(self):
         new_possible_words = {}
+        self.add_blacks_and_greens()
         for word in self.possible_words.keys():
             black_flag = False
             yellow_flag = True
             green_flag = True
+            black_and_green_flag = False
 
             #filter blacks
             if self.blacks:
                 contains_black_letter = False
                 for letter in self.blacks:
-                    if letter in word: #word contains a black charater, do not add
+                    if letter in word and letter not in self.black_and_greens: #word contains a black charater, do not add
                         contains_black_letter = True
                         break
                 if not contains_black_letter:
@@ -78,8 +88,13 @@ class Solver:
                             yellow_flag = False
                             break
 
-            #add word if all 3 flags are true
-            if black_flag and green_flag and yellow_flag:
+            if self.black_and_greens:
+                for letter in self.black_and_greens:
+                    if word.count(letter) == list(self.greens.values()).count(letter):
+                        black_and_green_flag = True
+
+            #add word if all 4 flags are true
+            if black_flag and green_flag and yellow_flag and black_and_green_flag:
                 freq = self.possible_words[word]
                 new_possible_words[word] = freq
             
@@ -91,6 +106,7 @@ class Solver:
         print("blacks: ", self.blacks)
         print("yellows: ", self.yellows)
         print("greens: ", self.greens)
+        print("blacks and greens: ", self.black_and_greens)
 
     def print_possible_words(self):
         print(self.possible_words)
