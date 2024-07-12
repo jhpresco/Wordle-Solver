@@ -51,7 +51,7 @@ class Solver:
             black_flag = False
             yellow_flag = True
             green_flag = True
-            black_and_green_flag = False
+            black_and_green_flag = True
 
             #filter blacks
             if self.blacks:
@@ -90,8 +90,8 @@ class Solver:
 
             if self.black_and_greens:
                 for letter in self.black_and_greens:
-                    if word.count(letter) == list(self.greens.values()).count(letter):
-                        black_and_green_flag = True
+                    if word.count(letter) != list(self.greens.values()).count(letter):
+                        black_and_green_flag = False
 
             #add word if all 4 flags are true
             if black_flag and green_flag and yellow_flag and black_and_green_flag:
